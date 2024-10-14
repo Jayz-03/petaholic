@@ -3,18 +3,18 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:petaholic/screens/appbar-screens/notification.dart';
-import 'package:petaholic/screens/appointment/appointment.dart';
-import 'package:petaholic/screens/authentication/login.dart';
-import 'package:petaholic/screens/home/home.dart';
-import 'package:petaholic/screens/products/products.dart';
-import 'package:petaholic/screens/sidebar-screens/about-us.dart';
-import 'package:petaholic/screens/sidebar-screens/contact-us.dart';
-import 'package:petaholic/screens/sidebar-screens/legal-terms.dart';
-import 'package:petaholic/screens/sidebar-screens/my-favorites.dart';
-import 'package:petaholic/screens/sidebar-screens/my-profile.dart';
-import 'package:petaholic/screens/sidebar-screens/services.dart';
-import 'package:petaholic/screens/telemedicine/telemedicine.dart';
+import 'package:petaholic/user/screens/appbar-screens/notification.dart';
+import 'package:petaholic/user/screens/appointment/appointment.dart';
+import 'package:petaholic/user/screens/authentication/login.dart';
+import 'package:petaholic/user/screens/home/home.dart';
+import 'package:petaholic/user/screens/products/products.dart';
+import 'package:petaholic/user/screens/sidebar-screens/about-us.dart';
+import 'package:petaholic/user/screens/sidebar-screens/contact-us.dart';
+import 'package:petaholic/user/screens/sidebar-screens/legal-terms.dart';
+import 'package:petaholic/user/screens/sidebar-screens/my-favorites.dart';
+import 'package:petaholic/user/screens/sidebar-screens/my-profile.dart';
+import 'package:petaholic/user/screens/sidebar-screens/services.dart';
+import 'package:petaholic/user/screens/telemedicine/telemedicine.dart';
 
 class SideAndTabsNavs extends StatefulWidget {
   @override

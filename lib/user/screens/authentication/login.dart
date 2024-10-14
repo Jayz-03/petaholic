@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:petaholic/common/navigation-appbar.dart';
-import 'package:petaholic/screens/authentication/register.dart';
+import 'package:petaholic/user/common/navigation-appbar.dart';
+import 'package:petaholic/user/screens/authentication/register.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -167,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
               : Text(
                   "Login",
                   style: GoogleFonts.lexend(
-                    color: Colors.black,
+                    color: Color.fromARGB(255, 0, 86, 99),
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),

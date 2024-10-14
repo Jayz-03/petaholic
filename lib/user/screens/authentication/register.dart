@@ -3,7 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:petaholic/screens/authentication/login.dart';
+import 'package:petaholic/user/screens/authentication/login.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -259,7 +259,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 : Text(
                     "Signup",
                     style: GoogleFonts.lexend(
-                      color: Colors.black,
+                      color: Color.fromARGB(255, 0, 86, 99),
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
