@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:petaholic/user/screens/authentication/login.dart';
+import 'package:petaholic/screens/authentication/login.dart';
 import 'content_model.dart';
 
 class Onbording extends StatefulWidget {

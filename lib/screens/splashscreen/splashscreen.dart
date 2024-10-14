@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:petaholic/user/screens/onboarding/onboarding.dart';
+import 'package:petaholic/screens/onboarding/onboarding.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
