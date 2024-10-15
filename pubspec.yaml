@@ -19,6 +19,7 @@ dependencies:
   shimmer: ^2.0.0
   iconsax: ^0.0.8
   flutter_launcher_icons: "^0.13.1"
+  mailer: ^6.2.0
   
 flutter_launcher_icons:
   android: true

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:petaholic/common/navigation-appbar.dart';
+import 'package:petaholic/screens/authentication/forgotPassword.dart';
 import 'package:petaholic/screens/authentication/register.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -185,7 +186,10 @@ class _LoginScreenState extends State<LoginScreen> {
   _forgotPassword(context) {
     return TextButton(
       onPressed: () {
-        // Implement forgot password
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+        );
       },
       child: Text(
         "Forgot Password?",
@@ -228,7 +232,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _loginUser() async {
-    if (_formKey.currentState!.validate()) { // Validate form before login
+    if (_formKey.currentState!.validate()) {
+      // Validate form before login
       setState(() {
         _isLoading = true;
       });
