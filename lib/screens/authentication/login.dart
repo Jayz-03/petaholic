@@ -228,14 +228,23 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _loginUser() async {
-    if (_formKey.currentState!.validate()) { // Validate form before login
+    if (_formKey.currentState!.validate()) {
+      String email = _emailController.text.trim();
+
+      if (email == 'petaholicveterinaryclinic@gmail.com') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Center(child: Text('Invalid email or password!')), backgroundColor: Colors.red),
+        );
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
 
       try {
         await _auth.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
+          email: email,
           password: _passwordController.text.trim(),
         );
 
@@ -245,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Login failed')),
+          SnackBar(content: Center(child: Text('Invalid email or password!')), backgroundColor: Colors.red),
         );
       } finally {
         setState(() {

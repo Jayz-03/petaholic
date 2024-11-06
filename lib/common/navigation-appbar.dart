@@ -11,7 +11,7 @@ import 'package:petaholic/screens/products/products.dart';
 import 'package:petaholic/screens/sidebar-screens/about-us.dart';
 import 'package:petaholic/screens/sidebar-screens/contact-us.dart';
 import 'package:petaholic/screens/sidebar-screens/legal-terms.dart';
-import 'package:petaholic/screens/sidebar-screens/my-favorites.dart';
+import 'package:petaholic/screens/sidebar-screens/pet-profile.dart';
 import 'package:petaholic/screens/sidebar-screens/my-profile.dart';
 import 'package:petaholic/screens/sidebar-screens/services.dart';
 import 'package:petaholic/screens/telemedicine/telemedicine.dart';
@@ -152,14 +152,14 @@ class _SideAndTabsNavsState extends State<SideAndTabsNavs> {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Iconsax.heart, color: Colors.white),
-                  title: Text('My Favorites',
+                  leading: Icon(Iconsax.pet, color: Colors.white),
+                  title: Text('Pet Profile',
                       style: GoogleFonts.lexend(color: Colors.white)),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MyFavoritesScreen(),
+                        builder: (context) => PetProfileScreen(),
                       ),
                     );
                   },

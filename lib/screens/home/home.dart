@@ -13,22 +13,17 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String selectedCategory = 'Treats';
-  List<Map<String, String>> products = [];
-
-  final DatabaseReference _databaseReference =
-      FirebaseDatabase.instance.ref().child('Products');
-
   late PageController _pageController;
   int _currentPage = 0;
   late Timer _timer;
 
+  final DatabaseReference _productsRef =
+      FirebaseDatabase.instance.ref().child('Products');
+
   @override
   void initState() {
     super.initState();
-    _fetchProducts();
-
     _pageController = PageController(initialPage: 0);
-
     _timer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
       if (_currentPage < 2) {
         _currentPage++;
@@ -51,42 +46,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _fetchProducts() {
-    _databaseReference.once().then((DatabaseEvent event) {
-      final data = event.snapshot.value as Map<dynamic, dynamic>?;
-
-      List<Map<String, String>> fetchedProducts = [];
-      if (data != null) {
-        data.forEach((key, value) {
-          final productData = value as Map<dynamic, dynamic>;
-
-          if (key != null && productData != null) {
-            Map<String, String> product = {
-              'id': key.toString(),
-              'category': productData['category'] as String? ?? '',
-              'price': productData['price'] as String? ?? '',
-              'name': productData['productName'] as String? ?? '',
-              'imageUrl': productData['imageUrl'] as String? ?? '',
-            };
-            fetchedProducts.add(product);
-          }
-        });
-      }
-
-      setState(() {
-        products = fetchedProducts;
-      });
-    }).catchError((error) {
-      print('Error fetching data: $error');
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    List<Map<String, String>> filteredProducts = products
-        .where((product) => product['category'] == selectedCategory)
-        .toList();
-
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -152,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         "Featured Products",
                         style: GoogleFonts.lexend(
-                            color: Colors.white,  
+                            color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.w600),
                       ),
@@ -160,86 +121,120 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    CategoryCard(
-                      image: 'assets/images/treats.png',
-                      label: 'Treats',
-                      isSelected: selectedCategory == 'Treats',
-                      onTap: () => setState(() => selectedCategory = 'Treats'),
-                    ),
-                    CategoryCard(
-                      image: 'assets/images/medicines.png',
-                      label: 'Medicines',
-                      isSelected: selectedCategory == 'Medicines',
-                      onTap: () =>
-                          setState(() => selectedCategory = 'Medicines'),
-                    ),
-                    CategoryCard(
-                      image: 'assets/images/essentials.png',
-                      label: 'Essentials',
-                      isSelected: selectedCategory == 'Essentials',
-                      onTap: () =>
-                          setState(() => selectedCategory = 'Essentials'),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                filteredProducts.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.only(left: 20, right: 20),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/images/doglayered.png',
-                              width: 100,
-                              height: 100,
-                            ),
-                            Text(
-                              "No Products Available Here!",
-                              style: GoogleFonts.lexend(
-                                fontSize: 20,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+
+                // StreamBuilder for Featured Products
+                StreamBuilder<DatabaseEvent>(
+                  stream: _productsRef.onValue,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData ||
+                        snapshot.data!.snapshot.value == null) {
+                      return Center(
+                          child: Text(
+                        'No products available!',
+                        style: GoogleFonts.lexend(color: Colors.white),
+                      ));
+                    } else {
+                      Map<dynamic, dynamic> products = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                      List<MapEntry<dynamic, dynamic>> productEntries = products.entries.toList();
+
+                      if (productEntries.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No featured products available!',
+                            style: GoogleFonts.lexend(color: Colors.white),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: productEntries.length,
+                        itemBuilder: (context, index) {
+                          var product = productEntries[index].value;
+                          var status = product['status'] ?? 'In stock';
+                          String stockStatus;
+                          Color statusColor;
+
+                          if (status == 'Out of stock') {
+                            stockStatus = 'Out of Stock';
+                            statusColor = Colors.red;
+                          } else if (status == 'Low stock') {
+                            stockStatus = 'Low Stock';
+                            statusColor = Colors.orange;
+                          } else {
+                            stockStatus = 'In stock';
+                            statusColor = Colors.green;
+                          }
+
+                          return Card(
+                            color: Colors.white,
+                            elevation: 4,
+                            margin: const EdgeInsets.all(8.0),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductDetailScreen(
+                                      productKey: productEntries[index].key,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: ListTile(
+                                leading: product['photoUrl'] != null
+                                    ? Image.network(
+                                        product['photoUrl'],
+                                        width: 50,
+                                        height: 50,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : const Icon(Icons.image),
+                                title: Text(
+                                  product['name'] ?? 'No Name',
+                                  style: GoogleFonts.lexend(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      product['category'] ?? 'N/A',
+                                      style: GoogleFonts.lexend(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                                    Text(
+                                      stockStatus,
+                                      style: GoogleFonts.lexend(
+                                          color: statusColor,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                                trailing: Text(
+                                  "₱${product['price'].toString()}",
+                                  style: GoogleFonts.lexend(
+                                      fontSize: 14, fontWeight: FontWeight.w500),
+                                ),
                               ),
                             ),
-                            SizedBox(height: 10),
-                            Text(
-                              "Currently, there is no product list here. Please check back later for updates.",
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.lexend(
-                                  fontSize: 12,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w400),
-                            ),
-                            SizedBox(height: 30),
-                          ],
-                        ),
-                      )
-                    : GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        children: filteredProducts.map((product) {
-                          return TreatsCard(
-                            price: "₱${product['price']!}",
-                            name: product['name']!,
-                            imageUrl: product['imageUrl']!,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ProductDetailScreen(
-                                    productId: product['id']!,
-                                  ),
-                                ),
-                              );
-                            },
                           );
-                        }).toList(),
-                      ),
+                        },
+                      );
+                    }
+                  },
+                ),
               ],
             ),
           ),
@@ -281,16 +276,28 @@ class PromoBanner extends StatelessWidget {
 class ServicesSection extends StatelessWidget {
   final List<Map<String, dynamic>> menuItems = [
     {
-      'title': 'Grooming',
+      'title': 'Consultation',
       'image': 'assets/images/grooming.png',
     },
     {
-      'title': 'Check Ups',
-      'image': 'assets/images/checkup.png',
+      'title': 'Vaccination',
+      'image': 'assets/images/grooming.png',
     },
     {
       'title': 'Deworming',
       'image': 'assets/images/deworming.png',
+    },
+    {
+      'title': 'Surgery',
+      'image': 'assets/images/grooming.png',
+    },
+    {
+      'title': 'Laboratories',
+      'image': 'assets/images/checkup.png',
+    },
+    {
+      'title': 'Grooming',
+      'image': 'assets/images/grooming.png',
     },
   ];
 
@@ -347,197 +354,6 @@ class ServicesSection extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class CategoryCard extends StatelessWidget {
-  final String image;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  CategoryCard({
-    required this.image,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Color.fromARGB(255, 65, 128, 140),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    image,
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                label,
-                style: GoogleFonts.lexend(
-                  color: isSelected ? Colors.white : Colors.white54,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class TreatsCard extends StatelessWidget {
-  final String price;
-  final String name;
-  final String imageUrl;
-  final VoidCallback onTap;
-
-  TreatsCard({
-    required this.price,
-    required this.name,
-    required this.imageUrl,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(2),
-        margin: EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Stack(
-                children: [
-                  Image.network(
-                    imageUrl,
-                    height: double.infinity,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) {
-                        return child;
-                      } else {
-                        return Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            color: Colors.white,
-                          ),
-                        );
-                      }
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Center(
-                        child: Icon(Iconsax.warning_2,
-                            color: Color.fromARGB(255, 164, 30, 32)),
-                      );
-                    },
-                  ),
-                  Container(
-                    height: double.infinity,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Positioned(
-              top: 14,
-              left: 10,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 5),
-                decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 10, 68, 46),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2.0,
-                  ),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Text(
-                  price,
-                  style: GoogleFonts.lexend(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 10,
-              right: 10,
-              child: Container(
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Iconsax.heart,
-                  color: Color.fromARGB(255, 164, 30, 32),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 10,
-              left: 10,
-              right: 10,
-              child: Text(
-                name,
-                style: GoogleFonts.lexend(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
-                softWrap: true,
-                overflow: TextOverflow.visible,
-                maxLines: 2,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

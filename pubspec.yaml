@@ -13,12 +13,12 @@ dependencies:
   firebase_database: ^11.0.3
   flutter:
     sdk: flutter
-  flutter_svg: ^2.0.10+1
   fluttertoast: ^8.2.6
   google_fonts: ^4.0.3
   shimmer: ^2.0.0
   iconsax: ^0.0.8
   flutter_launcher_icons: "^0.13.1"
+  intl: ^0.19.0
   
 flutter_launcher_icons:
   android: true
