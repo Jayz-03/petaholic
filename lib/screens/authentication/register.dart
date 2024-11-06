@@ -259,7 +259,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 : Text(
                     "Signup",
                     style: GoogleFonts.lexend(
-                      color: Colors.black,
+                      color: Color.fromARGB(255, 0, 86, 99),
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),

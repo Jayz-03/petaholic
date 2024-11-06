@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:petaholic/common/navigation-appbar.dart';
+import 'package:petaholic/screens/authentication/forgotPassword.dart';
 import 'package:petaholic/screens/authentication/register.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -167,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
               : Text(
                   "Login",
                   style: GoogleFonts.lexend(
-                    color: Colors.black,
+                    color: Color.fromARGB(255, 0, 86, 99),
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),
@@ -185,7 +186,10 @@ class _LoginScreenState extends State<LoginScreen> {
   _forgotPassword(context) {
     return TextButton(
       onPressed: () {
-        // Implement forgot password
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+        );
       },
       child: Text(
         "Forgot Password?",
@@ -229,6 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _loginUser() async {
     if (_formKey.currentState!.validate()) {
+<<<<<<< HEAD
       String email = _emailController.text.trim();
 
       if (email == 'petaholicveterinaryclinic@gmail.com') {
@@ -238,6 +243,9 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
+=======
+      // Validate form before login
+>>>>>>> f17437718c204996672d25e19aa3c8c0ccf64adf
       setState(() {
         _isLoading = true;
       });
