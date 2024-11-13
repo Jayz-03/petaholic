@@ -74,24 +74,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Color.fromARGB(255, 0, 86, 99),
         leading: IconButton(
-          icon:
-              Icon(Iconsax.arrow_left_2, color: Color.fromARGB(255, 0, 86, 99)),
+          icon: const Icon(Iconsax.arrow_left_2, color: Colors.white),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Notification',
-              style: GoogleFonts.lexend(
-                color: Color.fromARGB(255, 0, 86, 99),
-              ),
-            ),
-          ],
+        title: Text(
+          'Notification',
+          style: GoogleFonts.lexend(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Color.fromARGB(255, 223, 223, 223),
         ),
       ),
       body: Column(
