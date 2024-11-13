@@ -127,6 +127,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         (pet) => pet['petName'] == _selectedPetId,
         orElse: () => {'petId': '', 'petName': ''},
       );
+      final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
 
       Map<String, dynamic> appointmentDetails = {
         'fullName': _fullNameController.text.trim(),
@@ -138,6 +139,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         'appointmentTime': _selectedAppointmentTime,
         'status': 'Pending',
         'petProfile': selectedPet,
+        'userActive': "No",
+        'timestamp': currentTimestamp,
       };
 
       await _appointmentsRef

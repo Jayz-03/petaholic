@@ -17,7 +17,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
       appBar: AppBar(
       backgroundColor: Color.fromARGB(255, 0, 86, 99),
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left_1, color: Colors.white),
+          icon: const Icon(Iconsax.arrow_left_2, color: Colors.white),
           onPressed: () {
             Navigator.of(context).pop();
           },

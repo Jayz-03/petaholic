@@ -233,7 +233,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _loginUser() async {
     if (_formKey.currentState!.validate()) {
-<<<<<<< HEAD
       String email = _emailController.text.trim();
 
       if (email == 'petaholicveterinaryclinic@gmail.com') {
@@ -243,9 +242,6 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-=======
-      // Validate form before login
->>>>>>> f17437718c204996672d25e19aa3c8c0ccf64adf
       setState(() {
         _isLoading = true;
       });
