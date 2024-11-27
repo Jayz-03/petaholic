@@ -164,7 +164,7 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                     ),
                   ),
                   dropdownColor: Colors.white,
-                  style: GoogleFonts.lexend(color: Colors.white),
+                  style: GoogleFonts.lexend(color: Colors.black),
                   value: _selectedSex,
                   items: ['Male', 'Female'].map((String sex) {
                     return DropdownMenuItem<String>(
