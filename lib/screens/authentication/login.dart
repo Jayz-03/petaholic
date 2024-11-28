@@ -237,7 +237,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (email == 'petaholicveterinaryclinic@gmail.com') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Center(child: Text('Invalid email or password!')), backgroundColor: Colors.red),
+          SnackBar(
+            content: Center(child: Text('Invalid email or password!')),
+            backgroundColor: Colors.red,
+          ),
         );
         return;
       }
@@ -247,18 +250,39 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        await _auth.signInWithEmailAndPassword(
+        // Attempt to sign in with email and password
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: email,
           password: _passwordController.text.trim(),
         );
 
+        // Check if the email is verified
+        if (userCredential.user != null &&
+            !userCredential.user!.emailVerified) {
+          await _auth.signOut(); // Sign the user out if not verified
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Email not verified! Please check your email for the verification link.',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          return;
+        }
+
+        // Redirect to the main app if email is verified
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => SideAndTabsNavs()),
         );
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Center(child: Text('Invalid email or password!')), backgroundColor: Colors.red),
+          SnackBar(
+            content: Center(child: Text('Invalid email or password!')),
+            backgroundColor: Colors.red,
+          ),
         );
       } finally {
         setState(() {

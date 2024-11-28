@@ -324,10 +324,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
           "email": _emailController.text.trim(),
         });
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-        );
+        if (userCredential.user != null) {
+          await userCredential.user!.sendEmailVerification();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Center(
+                child: Text(
+                  'Verification email sent! Please check your email to verify your account.',
+                ),
+              ), backgroundColor: Colors.green,
+            ),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+          );
+        }
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.message ?? 'Registration failed')),

@@ -1,11 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
-import 'dart:math';
-
-import 'package:petaholic/screens/authentication/OTPVerification.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   @override
@@ -16,54 +13,56 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController emailController = TextEditingController();
   bool _isLoading = false;
   String generatedOTP = '';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<void> _sendOTP(String email) async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _resetPassword() async {
+    final email = emailController.text.trim();
 
-    final random = Random();
-    generatedOTP = (random.nextInt(900000) + 100000).toString();
-
-    String username = 'petaholicveterinaryclinic@gmail.com';
-    String password = 'icqc rsbd umlf ztko';
-
-    final smtpServer = gmail(username, password);
-    final message = Message()
-      ..from = Address(username, 'Petaholic Veterinary Clinic')
-      ..recipients.add(email)
-      ..subject = 'Password Reset OTP'
-      ..text = 'Your OTP for password reset is: $generatedOTP';
-
-    try {
-      await send(message, smtpServer);
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('OTP sent to $email'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OTPVerificationScreen(
-            email: email,
-            sentOTP: generatedOTP,
-          ),
-        ),
-      );
-    } on MailerException {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to send OTP. Please try again.'),
+        const SnackBar(
+          content: Center(child: Text('Please enter your email address.')),
           backgroundColor: Colors.red,
         ),
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      return;
+    }
+
+    try {
+      final snapshot = await FirebaseDatabase.instance
+          .ref()
+          .child('users')
+          .orderByChild('email')
+          .equalTo(email)
+          .once();
+
+      if (snapshot.snapshot.exists) {
+        await _auth.sendPasswordResetEmail(email: email);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Center(
+                child: Text(
+                    'Password reset email sent! Please check your inbox.')),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Center(child: Text('No user found with this email address.')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Center(child: Text('Error: ${e.toString()}')),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -157,25 +156,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _isLoading
-                  ? null
-                  : () {
-                      final email = emailController.text.trim();
-                      if (email.isNotEmpty) {
-                        _sendOTP(email);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Please enter a valid email!'),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
-                      }
-                    },
+              onPressed: _isLoading ? null : _resetPassword,
               child: _isLoading
                   ? CircularProgressIndicator()
                   : Text(
-                      'Send OTP',
+                      'Send Reset Password Link',
                       style:
                           GoogleFonts.lexend(fontSize: 16, color: Colors.white),
                     ),

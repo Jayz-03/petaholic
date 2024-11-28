@@ -2,9 +2,7 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconsax/iconsax.dart';
 import 'package:petaholic/screens/products/productDetail.dart';
-import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -140,8 +138,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: GoogleFonts.lexend(color: Colors.white),
                       ));
                     } else {
-                      Map<dynamic, dynamic> products = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-                      List<MapEntry<dynamic, dynamic>> productEntries = products.entries.toList();
+                      Map<dynamic, dynamic> products = snapshot
+                          .data!.snapshot.value as Map<dynamic, dynamic>;
+                      List<MapEntry<dynamic, dynamic>> productEntries =
+                          products.entries.toList();
 
                       if (productEntries.isEmpty) {
                         return Center(
@@ -152,85 +152,137 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
 
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: productEntries.length,
-                        itemBuilder: (context, index) {
-                          var product = productEntries[index].value;
-                          var status = product['status'] ?? 'In stock';
-                          String stockStatus;
-                          Color statusColor;
+                      return SizedBox(
+                        height:
+                            240, // Set a fixed height for horizontal ListView
+                        child: ListView.builder(
+                          scrollDirection:
+                              Axis.horizontal, // Set to horizontal scrolling
+                          itemCount: productEntries.length,
+                          itemBuilder: (context, index) {
+                            var product = productEntries[index].value;
+                            var status = product['status'] ?? 'In stock';
+                            String stockStatus;
+                            Color statusColor;
 
-                          if (status == 'Out of stock') {
-                            stockStatus = 'Out of Stock';
-                            statusColor = Colors.red;
-                          } else if (status == 'Low stock') {
-                            stockStatus = 'Low Stock';
-                            statusColor = Colors.orange;
-                          } else {
-                            stockStatus = 'In stock';
-                            statusColor = Colors.green;
-                          }
+                            if (status == 'Out of stock') {
+                              stockStatus = 'Out of Stock';
+                              statusColor = Colors.red;
+                            } else if (status == 'Low stock') {
+                              stockStatus = 'Low Stock';
+                              statusColor = Colors.orange;
+                            } else {
+                              stockStatus = 'In stock';
+                              statusColor = Colors.green;
+                            }
 
-                          return Card(
-                            color: Colors.white,
-                            elevation: 4,
-                            margin: const EdgeInsets.all(8.0),
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductDetailScreen(
-                                      productKey: productEntries[index].key,
-                                    ),
+                            return SizedBox(
+                              width: 150,
+                              child: Card(
+                                color: Colors.white,
+                                elevation: 4,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 8.0, vertical: 16.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      12.0), // Add rounded corners
+                                ),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(
+                                      12.0), // Match Card radius
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ProductDetailScreen(
+                                          productKey: productEntries[index].key,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(
+                                              12.0), // Match top corners
+                                          topRight: Radius.circular(12.0),
+                                        ),
+                                        child: product['photoUrl'] != null
+                                            ? Image.network(
+                                                product['photoUrl'],
+                                                width: double.infinity,
+                                                height: 100,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Container(
+                                                color: Colors.grey.shade200,
+                                                height: 100,
+                                                child: const Icon(Icons.image,
+                                                    size: 50,
+                                                    color: Colors.grey),
+                                              ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          product['name'] ?? 'No Name',
+                                          style: GoogleFonts.lexend(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child: Text(
+                                          product['category'] ?? 'N/A',
+                                          style: GoogleFonts.lexend(
+                                            color: Colors.black,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child: Text(
+                                          stockStatus,
+                                          style: GoogleFonts.lexend(
+                                            color: statusColor,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          "₱${product['price'].toString()}",
+                                          style: GoogleFonts.lexend(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                );
-                              },
-                              child: ListTile(
-                                leading: product['photoUrl'] != null
-                                    ? Image.network(
-                                        product['photoUrl'],
-                                        width: 50,
-                                        height: 50,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : const Icon(Icons.image),
-                                title: Text(
-                                  product['name'] ?? 'No Name',
-                                  style: GoogleFonts.lexend(
-                                      color: Colors.black,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      product['category'] ?? 'N/A',
-                                      style: GoogleFonts.lexend(
-                                          color: Colors.black,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                    Text(
-                                      stockStatus,
-                                      style: GoogleFonts.lexend(
-                                          color: statusColor,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
-                                ),
-                                trailing: Text(
-                                  "₱${product['price'].toString()}",
-                                  style: GoogleFonts.lexend(
-                                      fontSize: 14, fontWeight: FontWeight.w500),
                                 ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       );
                     }
                   },
@@ -277,27 +329,19 @@ class ServicesSection extends StatelessWidget {
   final List<Map<String, dynamic>> menuItems = [
     {
       'title': 'Consultation',
-      'image': 'assets/images/grooming.png',
+      'image': 'assets/images/Consultation.png',
     },
     {
       'title': 'Vaccination',
-      'image': 'assets/images/grooming.png',
+      'image': 'assets/images/Vaccination.png',
     },
     {
       'title': 'Deworming',
-      'image': 'assets/images/deworming.png',
+      'image': 'assets/images/Deworming.png',
     },
     {
       'title': 'Surgery',
-      'image': 'assets/images/grooming.png',
-    },
-    {
-      'title': 'Laboratories',
-      'image': 'assets/images/checkup.png',
-    },
-    {
-      'title': 'Grooming',
-      'image': 'assets/images/grooming.png',
+      'image': 'assets/images/Surgery.png',
     },
   ];
 
