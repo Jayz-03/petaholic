@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:googleapis_auth/googleapis_auth.dart';
+import 'package:http/http.dart' as http;
 
 class AppointmentScreen extends StatefulWidget {
   const AppointmentScreen({super.key});
@@ -17,6 +24,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   final _fullNameController = TextEditingController();
   final _addressController = TextEditingController();
   final _contactNumberController = TextEditingController();
+  final _instructionNoteController = TextEditingController();
 
   String? _selectedService;
   DateTime? _selectedAppointmentDate;
@@ -129,9 +137,19 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       );
       final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
 
+      // Retrieve FCM token
+      String? fcmToken;
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+      } catch (e) {
+        fcmToken = null; // Handle the case where FCM token retrieval fails
+        debugPrint("Failed to retrieve FCM token: $e");
+      }
+
       Map<String, dynamic> appointmentDetails = {
         'fullName': _fullNameController.text.trim(),
         'address': _addressController.text.trim(),
+        'instructionNote': _instructionNoteController.text.trim(),
         'contactNumber': _contactNumberController.text.trim(),
         'service': _selectedService,
         'appointmentDate':
@@ -141,6 +159,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         'petProfile': selectedPet,
         'userActive': "No",
         'timestamp': currentTimestamp,
+        'fcmToken':
+            fcmToken ?? '', // Save the FCM token or empty string if unavailable
       };
 
       await _appointmentsRef
@@ -148,12 +168,96 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
           .child(appointmentId)
           .set(appointmentDetails);
 
+      String title;
+      String message;
+
+      title = 'Upcoming Appointment';
+      message =
+          'You have received appointment today. Please check the schedule for details.';
+
+      // Send push notification
+      _sendPushNotification(
+        fcmToken: "",
+        title: title,
+        body: message,
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Center(child: Text('Appointment saved successfully!')),
           backgroundColor: Colors.green,
         ),
       );
+    }
+  }
+
+  Future<void> _sendPushNotification({
+    required String fcmToken,
+    required String title,
+    required String body,
+  }) async {
+    const String projectId = 'petaholic-4b075';
+    final String url =
+        'https://fcm.googleapis.com/v1/projects/$projectId/messages:send';
+
+    try {
+      String accessToken = await _getAccessToken();
+
+      final Map<String, dynamic> message = {
+        'message': {
+          'token': fcmToken,
+          'notification': {
+            'title': title,
+            'body': body,
+          },
+          'data': {
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            'status': 'new',
+          },
+        },
+      };
+
+      print("Sending message: ${jsonEncode(message)}");
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(message),
+      );
+
+      if (response.statusCode == 200) {
+        print('Push notification sent successfully.');
+      } else {
+        print('Failed to send push notification: ${response.body}');
+      }
+    } catch (e) {
+      print('Error sending push notification: $e');
+    }
+  }
+
+  Future<String> _getAccessToken() async {
+    try {
+      final serviceAccountKey = await rootBundle
+          .loadString('assets/petaholic-4b075-ab9d200ab6d8.json');
+
+      final Map<String, dynamic> keyData = jsonDecode(serviceAccountKey);
+
+      final accountCredentials = ServiceAccountCredentials.fromJson(keyData);
+
+      const List<String> scopes = [
+        'https://www.googleapis.com/auth/cloud-platform',
+      ];
+
+      final client = await clientViaServiceAccount(accountCredentials, scopes);
+
+      final accessToken = client.credentials.accessToken;
+
+      return accessToken.data;
+    } catch (e) {
+      throw Exception('Error getting access token: $e');
     }
   }
 
@@ -209,6 +313,18 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                     ),
                     const SizedBox(height: 10),
                     _buildStyledTextFormField(
+                      controller: _instructionNoteController,
+                      hintText: 'Instruction Note',
+                      icon: Iconsax.document_text,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please provide instructions or notes for the appointment';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _buildStyledTextFormField(
                       controller: _contactNumberController,
                       hintText: 'Contact Number',
                       icon: Iconsax.call,
@@ -220,7 +336,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: _selectedService,
                       items: _services.map((service) {
@@ -253,7 +369,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: _selectedPetId,
                       items: _petsList.map<DropdownMenuItem<String>>((pet) {
@@ -287,7 +403,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     Center(
                       child: Card(
                         color: Colors.white,
@@ -332,7 +448,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: _selectedAppointmentTime,
                       items: _timeSlots.map((timeSlot) {

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:petaholic/screens/messages/faqs.dart';
 import 'package:petaholic/screens/messages/videoCall.dart';
 
 class MessagesScreen extends StatefulWidget {
@@ -238,13 +239,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset(
-                          'assets/images/doglayered.png',
+                          'assets/images/questionmark.png',
                           width: 200,
                           height: 200,
                         ),
                         Text(
                           textAlign: TextAlign.center,
-                          'No messages yet, but you can start conversation \nwith Petaholic Veterinary for your appointment ${widget.service}.',
+                          'No messages yet, but you can start \nconversation with Petaholic Veterinary \nfor your appointment ${widget.service}.',
                           style: GoogleFonts.lexend(
                             fontSize: 16,
                             color: Color.fromARGB(255, 0, 86, 99),
@@ -292,6 +293,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
+                IconButton(
+                  icon: const Icon(
+                    Iconsax.message_question,
+                    color: Color.fromARGB(255, 0, 86, 99),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => FAQScreen()),
+                    );
+                  },
+                ),
                 Expanded(
                   child: TextField(
                     cursorColor: Color.fromARGB(255, 0, 86, 99),

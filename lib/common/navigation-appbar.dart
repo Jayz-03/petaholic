@@ -165,18 +165,6 @@ class _SideAndTabsNavsState extends State<SideAndTabsNavs> {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Iconsax.box, color: Colors.white),
-                  title: Text('Services',
-                      style: GoogleFonts.lexend(color: Colors.white)),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ServicesScreen()),
-                    );
-                  },
-                ),
-                ListTile(
                   leading: Icon(Iconsax.message_question, color: Colors.white),
                   title: Text('About Us',
                       style: GoogleFonts.lexend(color: Colors.white)),

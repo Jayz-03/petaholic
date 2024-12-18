@@ -105,19 +105,18 @@ class _ProductScreenState extends State<ProductScreen> {
                         itemBuilder: (context, index) {
                           var productKey = productEntries[index].key;
                           var product = productEntries[index].value;
-                          var status = product['status'] ?? 0;
 
+                          // Determine quantity and status
+                          int quantity =
+                              product['quantity'] ?? 0; // Default to 0 if null
                           String stockStatus;
                           Color statusColor;
 
-                          if (status == 'Out of stock') {
-                            stockStatus = 'Out of Stock';
-                            statusColor = Colors.red;
-                          } else if (status == 'Low stock') {
+                          if (quantity < 20) {
                             stockStatus = 'Low Stock';
                             statusColor = Colors.orange;
                           } else {
-                            stockStatus = 'In stock';
+                            stockStatus = 'In Stock';
                             statusColor = Colors.green;
                           }
 
@@ -137,10 +136,15 @@ class _ProductScreenState extends State<ProductScreen> {
                               },
                               child: ListTile(
                                 leading: product['photoUrl'] != null
-                                    ? Image.network(product['photoUrl'],
-                                        width: 50,
-                                        height: 50,
-                                        fit: BoxFit.cover)
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          product['photoUrl'],
+                                          width: 50,
+                                          height: 50,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
                                     : const Icon(Icons.image),
                                 title: Text(
                                   product['name'] ?? 'No Name',
@@ -166,6 +170,13 @@ class _ProductScreenState extends State<ProductScreen> {
                                           fontSize: 12,
                                           fontWeight: FontWeight.w500),
                                     ),
+                                    Text(
+                                      'Stocks: $quantity', // Display product quantity
+                                      style: GoogleFonts.lexend(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500),
+                                    ),
                                   ],
                                 ),
                                 trailing: Text(
@@ -182,7 +193,7 @@ class _ProductScreenState extends State<ProductScreen> {
                     }
                   },
                 ),
-              ),
+              )
             ],
           ),
         ],

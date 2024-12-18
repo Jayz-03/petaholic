@@ -24,6 +24,9 @@ dependencies:
   timeago: ^3.7.0
   url_launcher: ^6.3.1
   table_calendar: ^3.1.2
+  googleapis_auth: ^1.6.0
+  http: ^1.2.2
+  firebase_messaging: ^15.1.6
   
 flutter_launcher_icons:
   android: true
@@ -40,3 +43,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/petaholic-4b075-ab9d200ab6d8.json

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:petaholic/screens/messages/messages.dart';
 
 class TelemedicineScreen extends StatefulWidget {
@@ -16,7 +17,9 @@ class _TelemedicineScreenState extends State<TelemedicineScreen> {
   late final String userId;
   late StreamSubscription _appointmentsSubscription;
   List<Map<String, dynamic>> _approvedAppointments = [];
+  List<Map<String, dynamic>> _filteredAppointments = [];
   bool _isLoading = true;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -50,10 +53,31 @@ class _TelemedicineScreenState extends State<TelemedicineScreen> {
       if (mounted) {
         setState(() {
           _approvedAppointments = approved;
+          _filteredAppointments = approved; // Initialize with all appointments
           _isLoading = false;
         });
       }
     });
+  }
+
+  void _filterAppointments(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _filteredAppointments = _approvedAppointments;
+      });
+    } else {
+      setState(() {
+        _filteredAppointments = _approvedAppointments
+            .where((appointment) =>
+                appointment['service']
+                    .toLowerCase()
+                    .contains(query.toLowerCase()) ||
+                appointment['appointmentDate']
+                    .toLowerCase()
+                    .contains(query.toLowerCase()))
+            .toList();
+      });
+    }
   }
 
   @override
@@ -85,77 +109,113 @@ class _TelemedicineScreenState extends State<TelemedicineScreen> {
             'assets/images/bgscreen.png',
             fit: BoxFit.cover,
           ),
-          _isLoading
-              ? Center(
-                  child: CircularProgressIndicator(
-                    color: Color.fromARGB(255, 0, 86, 99),
+          Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: TextField(
+                  onChanged: (value) {
+                    _searchQuery = value;
+                    _filterAppointments(value);
+                  },
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Iconsax.search_normal, color: Colors.grey),
+                    hintText: 'Search appointments...',
+                    hintStyle: GoogleFonts.lexend(color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: EdgeInsets.symmetric(vertical: 0),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide:
+                          BorderSide(color: Colors.grey.shade300, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide:
+                          BorderSide(color: Colors.grey.shade400, width: 1),
+                    ),
                   ),
-                )
-              : _approvedAppointments.isEmpty
-                  ? Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            'assets/images/doglayered.png',
-                            width: 200,
-                            height: 200,
-                          ),
-                          Text(
-                            textAlign: TextAlign.center,
-                            'Currently, you don\'nt have any \napproved appointments yet.',
-                            style: GoogleFonts.lexend(
-                              fontSize: 16,
-                              color: Color.fromARGB(255, 0, 86, 99),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: _approvedAppointments.length,
-                      itemBuilder: (context, index) {
-                        final appointment = _approvedAppointments[index];
-                        return Card(
-                          margin:
-                              EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                          elevation: 4,
-                          color: Colors.white,
-                          child: ListTile(
-                            leading: Image.asset(
-                                "assets/images/petaholic-logo.png",
-                                height: 30),
-                            title: Text(
-                              '${appointment['service']} - ${appointment['appointmentDate']}',
-                              style: GoogleFonts.lexend(
-                                fontSize: 18,
-                                color: Color.fromARGB(255, 0, 86, 99),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              'Tap to view messages',
-                              style: GoogleFonts.lexend(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MessagesScreen(
-                                    service: appointment['service'],
-                                    appointmentId: appointment['appointmentId'],
+                ),
+              ),
+              Expanded(
+                child: _isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: Color.fromARGB(255, 0, 86, 99),
+                        ),
+                      )
+                    : _filteredAppointments.isEmpty
+                        ? Center(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  'assets/images/questionm.png',
+                                  width: 200,
+                                  height: 200,
+                                ),
+                                Text(
+                                  textAlign: TextAlign.center,
+                                  'There is no appointment match found!',
+                                  style: GoogleFonts.lexend(
+                                    fontSize: 16,
+                                    color: Colors.white,
                                   ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: _filteredAppointments.length,
+                            itemBuilder: (context, index) {
+                              final appointment =
+                                  _filteredAppointments[index];
+                              return Card(
+                                margin: EdgeInsets.symmetric(
+                                    vertical: 5, horizontal: 10),
+                                elevation: 4,
+                                color: Colors.white,
+                                child: ListTile(
+                                  leading: Image.asset(
+                                      "assets/images/petaholic-logo.png",
+                                      height: 30),
+                                  title: Text(
+                                    '${appointment['service']} - ${appointment['appointmentDate']}',
+                                    style: GoogleFonts.lexend(
+                                      fontSize: 18,
+                                      color: Color.fromARGB(255, 0, 86, 99),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'Tap to view messages',
+                                    style: GoogleFonts.lexend(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MessagesScreen(
+                                          service: appointment['service'],
+                                          appointmentId:
+                                              appointment['appointmentId'],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               );
                             },
                           ),
-                        );
-                      },
-                    )
+              ),
+            ],
+          ),
         ],
       ),
     );

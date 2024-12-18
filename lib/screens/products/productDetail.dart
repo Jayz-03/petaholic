@@ -14,11 +14,11 @@ class ProductDetailScreen extends StatelessWidget {
         FirebaseDatabase.instance.ref().child('Products').child(productKey);
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 86, 99),
+      backgroundColor: Color.fromARGB(255, 0, 86, 99),
       appBar: AppBar(
         title: Text('Product Details',
             style: GoogleFonts.lexend(color: Colors.white)),
-        backgroundColor: const Color.fromARGB(255, 0, 86, 99),
+        backgroundColor: Color.fromARGB(255, 0, 86, 99),
         leading: IconButton(
           icon: const Icon(Iconsax.arrow_left_2, color: Colors.white),
           onPressed: () {
@@ -26,150 +26,193 @@ class ProductDetailScreen extends StatelessWidget {
           },
         ),
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'assets/images/bgside1.png',
-            fit: BoxFit.cover,
-          ),
-          FutureBuilder<DatabaseEvent>(
-            future: productRef.once(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                    'Error: ${snapshot.error}',
-                    style: GoogleFonts.lexend(color: Colors.white),
-                  ),
-                );
-              } else if (snapshot.hasData &&
-                  snapshot.data!.snapshot.value != null) {
-                // Extract the product data
-                Map<dynamic, dynamic> productDetails =
-                    snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+      body: FutureBuilder<DatabaseEvent>(
+        future: productRef.once(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: GoogleFonts.lexend(),
+              ),
+            );
+          } else if (snapshot.hasData &&
+              snapshot.data!.snapshot.value != null) {
+            // Extract the product data
+            Map<dynamic, dynamic> productDetails =
+                snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
 
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Image Card
-                        Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: productDetails['photoUrl'] != null
-                                ? Center(
-                                    child: Image.network(
-                                      productDetails['photoUrl'],
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                : const Center(
-                                    child: Icon(Icons.image, size: 100)),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Name and Category Card
-                        Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${productDetails['name'] ?? 'N/A'}',
-                                  style: GoogleFonts.lexend(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${productDetails['category'] ?? 'N/A'}',
-                                  style: GoogleFonts.lexend(
-                                      fontSize: 14, color: Colors.grey),
-                                ),
-                              ],
+            // Get the product quantity and determine stock status
+            int quantity = productDetails['quantity'] ?? 0;
+            String status = quantity < 20 ? 'Low Stock' : 'In Stock';
+
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Product Image
+                  productDetails['photoUrl'] != null
+                      ? Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              productDetails['photoUrl'],
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Price and Status Card
-                        Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
+                        )
+                      : const Center(child: Icon(Icons.image, size: 100)),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Product Name
+                          Text(
+                            '${productDetails['name'] ?? 'N/A'}',
+                            style: GoogleFonts.lexend(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Price: ₱${productDetails['price']?.toStringAsFixed(2) ?? 'N/A'}',
-                                  style: GoogleFonts.lexend(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Status: ${productDetails['status'] ?? 'N/A'}',
-                                  style: GoogleFonts.lexend(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black),
-                                ),
-                              ],
-                            ),
+                          Text(
+                            '${productDetails['category'] ?? 'N/A'}',
+                            style: GoogleFonts.lexend(
+                                fontSize: 16, color: Colors.white),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Description Card
-                        Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text(
-                              '${productDetails['description'] ?? 'N/A'}',
-                              style: GoogleFonts.lexend(
-                                fontSize: 14,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
+
+                      // Price
+                      Text(
+                        '₱${productDetails['price']?.toStringAsFixed(2) ?? 'N/A'}',
+                        style: GoogleFonts.lexend(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Stock Status
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: quantity < 20 ? Colors.red : Colors.green,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      status,
+                      style: GoogleFonts.lexend(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
-                );
-              } else {
-                return Center(
-                  child: Text(
-                    'Product not found!',
-                    style: GoogleFonts.lexend(color: Colors.white),
+                  const SizedBox(height: 16),
+
+                  // Stocks (Quantity)
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                    color: Colors.white.withOpacity(0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Stocks Available:',
+                                style: GoogleFonts.lexend(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              Text(
+                                'Expiration Date: ${productDetails['expirationDate']}',
+                                style: GoogleFonts.lexend(
+                                    fontSize: 12,
+                                    color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '$quantity',
+                              style: GoogleFonts.lexend(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                );
-              }
-            },
-          ),
-        ],
+                  const SizedBox(height: 10),
+
+                  // Product Description
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                    color: Colors.white.withOpacity(0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Description:',
+                            style: GoogleFonts.lexend(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '${productDetails['description'] ?? 'N/A'}',
+                            style: GoogleFonts.lexend(
+                                fontSize: 14, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            return Center(
+              child: Text(
+                'Product not found!',
+                style: GoogleFonts.lexend(fontSize: 18, color: Colors.white),
+              ),
+            );
+          }
+        },
       ),
     );
   }

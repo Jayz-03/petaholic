@@ -161,35 +161,36 @@ class _HomeScreenState extends State<HomeScreen> {
                           itemCount: productEntries.length,
                           itemBuilder: (context, index) {
                             var product = productEntries[index].value;
-                            var status = product['status'] ?? 'In stock';
+                            int quantity =
+                                product['quantity'] ?? 0; // Get quantity
                             String stockStatus;
                             Color statusColor;
 
-                            if (status == 'Out of stock') {
-                              stockStatus = 'Out of Stock';
-                              statusColor = Colors.red;
-                            } else if (status == 'Low stock') {
-                              stockStatus = 'Low Stock';
+                            if (quantity < 20) {
+                              stockStatus =
+                                  'Low Stock'; // Low stock when quantity is less than 20
                               statusColor = Colors.orange;
                             } else {
-                              stockStatus = 'In stock';
+                              stockStatus = 'In Stock'; // In stock otherwise
                               statusColor = Colors.green;
                             }
 
                             return SizedBox(
-                              width: 150,
+                              width: 160, // Adjusted width
                               child: Card(
-                                color: Colors.white,
-                                elevation: 4,
+                                color: const Color.fromARGB(255, 65, 128,
+                                    140), // Updated background color
+                                elevation:
+                                    6, // Increased elevation for better card visibility
                                 margin: const EdgeInsets.symmetric(
                                     horizontal: 8.0, vertical: 16.0),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
-                                      12.0), // Add rounded corners
+                                      16.0), // Larger radius for rounded corners
                                 ),
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(
-                                      12.0), // Match Card radius
+                                      16.0), // Match Card radius
                                   onTap: () {
                                     Navigator.push(
                                       context,
@@ -209,30 +210,36 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ClipRRect(
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(
-                                              12.0), // Match top corners
-                                          topRight: Radius.circular(12.0),
+                                              16.0), // Match top corners
+                                          topRight: Radius.circular(16.0),
                                         ),
                                         child: product['photoUrl'] != null
                                             ? Image.network(
                                                 product['photoUrl'],
                                                 width: double.infinity,
-                                                height: 100,
+                                                height:
+                                                    120, // Adjusted image height
                                                 fit: BoxFit.cover,
                                               )
                                             : Container(
                                                 color: Colors.grey.shade200,
-                                                height: 100,
-                                                child: const Icon(Icons.image,
-                                                    size: 50,
-                                                    color: Colors.grey),
+                                                height: 120,
+                                                child: const Icon(
+                                                  Icons.image,
+                                                  size: 60,
+                                                  color: Colors.grey,
+                                                ),
                                               ),
                                       ),
+                                      const SizedBox(height: 8),
                                       Padding(
-                                        padding: const EdgeInsets.all(8.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
                                         child: Text(
                                           product['name'] ?? 'No Name',
                                           style: GoogleFonts.lexend(
-                                            color: Colors.black,
+                                            color: Colors
+                                                .white, // Updated to white for contrast
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -246,7 +253,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         child: Text(
                                           product['category'] ?? 'N/A',
                                           style: GoogleFonts.lexend(
-                                            color: Colors.black,
+                                            color: Colors
+                                                .white70, // Updated to white with opacity
                                             fontSize: 12,
                                             fontWeight: FontWeight.w400,
                                           ),
@@ -267,12 +275,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.all(8.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
                                         child: Text(
-                                          "₱${product['price'].toString()}",
+                                          "Stock: $quantity", // Display the quantity
                                           style: GoogleFonts.lexend(
-                                            fontSize: 14,
+                                            color: Colors
+                                                .white, // Updated to white for better readability
+                                            fontSize: 12,
                                             fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        // Wrap price and stock status with Expanded to avoid overflow
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "₱${product['price'].toString()}",
+                                            style: GoogleFonts.lexend(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors
+                                                  .white, // Updated to white for better contrast
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -337,11 +363,19 @@ class ServicesSection extends StatelessWidget {
     },
     {
       'title': 'Deworming',
-      'image': 'assets/images/Deworming.png',
+      'image': 'assets/images/deworming.png',
     },
     {
       'title': 'Surgery',
       'image': 'assets/images/Surgery.png',
+    },
+    {
+      'title': 'Laboratory',
+      'image': 'assets/images/Laboratory.png',
+    },
+    {
+      'title': 'Grooming',
+      'image': 'assets/images/grooming.png',
     },
   ];
 

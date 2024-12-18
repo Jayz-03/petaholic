@@ -25,32 +25,17 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             Navigator.of(context).pop();
           },
         ),
-        title: Center(
-          child: Text(
-            'Contact Us',
-            style: GoogleFonts.lexend(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+        title: Text(
+          'Contact Us',
+          style: GoogleFonts.lexend(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         iconTheme: const IconThemeData(
           color: Color.fromARGB(255, 223, 223, 223),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text(
-              'Done',
-              style: GoogleFonts.lexend(
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(8.0),
