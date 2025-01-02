@@ -153,7 +153,7 @@ class _TelemedicineScreenState extends State<TelemedicineScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Image.asset(
-                                  'assets/images/questionm.png',
+                                  'assets/images/questionmark.png',
                                   width: 200,
                                   height: 200,
                                 ),

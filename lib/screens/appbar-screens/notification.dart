@@ -150,12 +150,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset(
-                          'assets/images/doglayered.png',
+                          'assets/images/questionmark.png',
                           width: 200,
                           height: 200,
                         ),
                         Text(
-                          'No notifications available!',
+                          'No notification available!',
                           style: GoogleFonts.lexend(
                             fontSize: 16,
                             color: Color.fromARGB(255, 0, 86, 99),

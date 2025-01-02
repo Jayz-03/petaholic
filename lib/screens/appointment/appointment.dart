@@ -31,6 +31,23 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   String? _selectedAppointmentTime;
   String? _selectedPetId;
 
+  void _fetchUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userRef =
+          FirebaseDatabase.instance.ref().child('users').child(user.uid);
+
+      final snapshot = await userRef.get();
+      if (snapshot.exists) {
+        final userData = snapshot.value as Map<dynamic, dynamic>;
+        setState(() {
+          _fullNameController.text =
+              '${userData['firstName']} ${userData['lastName']}';
+        });
+      }
+    }
+  }
+
   final List<String> _services = [
     'Consultation',
     'Vaccination',
@@ -49,17 +66,19 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     '1:00 PM - 2:00 PM',
     '2:00 PM - 3:00 PM',
     '3:00 PM - 4:00 PM',
+    '4:00 PM - 5:00 PM',
+    '5:00 PM - 6:00 PM',
   ];
 
   final DatabaseReference _appointmentsRef =
       FirebaseDatabase.instance.ref().child('Appointments');
   DatabaseReference? _petsRef;
-  List<Map<String, dynamic>> _pets = [];
 
   @override
   void initState() {
     super.initState();
     _fetchPets();
+    _fetchUserData();
   }
 
   List<Map<String, dynamic>> _petsList = [];
@@ -137,6 +156,58 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       );
       final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
 
+      // Check if appointmentTime is null before proceeding
+      if (_selectedAppointmentTime == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Please select a valid appointment time')),
+        );
+        return;
+      }
+
+      // Check if there are already 10 appointments for the selected timeslot on the selected date
+      final appointmentDate =
+          DateFormat('yyyy-MM-dd').format(_selectedAppointmentDate!);
+      final appointmentTime = _selectedAppointmentTime!; // Ensure it's not null
+
+      // Reference to the appointments for the specific date and timeslot
+      final timeslotRef = FirebaseDatabase.instance
+          .ref('appointments')
+          .child(appointmentDate)
+          .child(appointmentTime);
+
+      // Retrieve all appointments for the selected date and timeslot
+      final snapshot = await timeslotRef.get();
+
+      if (snapshot.exists) {
+        final Map<dynamic, dynamic>? appointments =
+            snapshot.value as Map<dynamic, dynamic>?;
+
+        // Check if the data is valid and can be treated as a map
+        if (appointments != null) {
+          // Count the number of appointments for the selected timeslot
+          int appointmentCount = appointments.length;
+
+          // If there are already 10 appointments, show an error message
+          if (appointmentCount >= 10) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text(
+                      'This timeslot is fully booked. Please choose another one.')),
+            );
+            return;
+          }
+        } else {
+          // Handle the case where snapshot.value is not a valid map
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    'Error retrieving appointments. Please try again later.')),
+          );
+          return;
+        }
+      }
+
       // Retrieve FCM token
       String? fcmToken;
       try {
@@ -152,9 +223,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         'instructionNote': _instructionNoteController.text.trim(),
         'contactNumber': _contactNumberController.text.trim(),
         'service': _selectedService,
-        'appointmentDate':
-            DateFormat('yyyy-MM-dd').format(_selectedAppointmentDate!),
-        'appointmentTime': _selectedAppointmentTime,
+        'appointmentDate': appointmentDate,
+        'appointmentTime': appointmentTime,
         'status': 'Pending',
         'petProfile': selectedPet,
         'userActive': "No",
@@ -168,12 +238,9 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
           .child(appointmentId)
           .set(appointmentDetails);
 
-      String title;
-      String message;
-
-      title = 'Upcoming Appointment';
-      message =
-          'You have received appointment today. Please check the schedule for details.';
+      String title = 'Upcoming Appointment';
+      String message =
+          'You have received an appointment today. Please check the schedule for details.';
 
       // Send push notification
       _sendPushNotification(
@@ -342,7 +409,11 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       items: _services.map((service) {
                         return DropdownMenuItem(
                           value: service,
-                          child: Text(service, style: GoogleFonts.lexend()),
+                          child: Text(
+                            service,
+                            style: GoogleFonts.lexend(
+                                color: Colors.white), // Set font color to white
+                          ),
                         );
                       }).toList(),
                       decoration: InputDecoration(
@@ -357,6 +428,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                           borderSide: BorderSide.none,
                         ),
                       ),
+                      dropdownColor: const Color.fromARGB(
+                          255, 0, 86, 99), // Set background color of dropdown
                       onChanged: (value) {
                         setState(() {
                           _selectedService = value;
@@ -375,8 +448,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       items: _petsList.map<DropdownMenuItem<String>>((pet) {
                         return DropdownMenuItem<String>(
                           value: pet['petName'], // Use petName as the value
-                          child:
-                              Text(pet['petName'], style: GoogleFonts.lexend()),
+                          child: Text(
+                            pet['petName'],
+                            style: GoogleFonts.lexend(color: Colors.white),
+                          ),
                         );
                       }).toList(),
                       decoration: InputDecoration(
@@ -391,6 +466,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                           borderSide: BorderSide.none,
                         ),
                       ),
+                      dropdownColor: const Color.fromARGB(255, 0, 86, 99),
                       onChanged: (value) {
                         setState(() {
                           _selectedPetId = value;
@@ -415,7 +491,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                             style: GoogleFonts.lexend(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black),
+                                color: Color.fromARGB(255, 0, 86, 99)),
                           ),
                         ),
                       ),
@@ -454,7 +530,9 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       items: _timeSlots.map((timeSlot) {
                         return DropdownMenuItem(
                           value: timeSlot,
-                          child: Text(timeSlot, style: GoogleFonts.lexend()),
+                          child: Text(timeSlot, 
+                            style: GoogleFonts.lexend(
+                                color: Colors.white),),
                         );
                       }).toList(),
                       decoration: InputDecoration(
@@ -469,6 +547,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                           borderSide: BorderSide.none,
                         ),
                       ),
+                      dropdownColor: const Color.fromARGB(255, 0, 86, 99),
                       onChanged: (value) {
                         setState(() {
                           _selectedAppointmentTime = value;

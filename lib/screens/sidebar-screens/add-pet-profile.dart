@@ -3,7 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 
 class AddPetProfileScreen extends StatefulWidget {
   const AddPetProfileScreen({super.key});
@@ -19,8 +22,11 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
   final TextEditingController _dateOfBirthController = TextEditingController();
 
   String? _selectedSex;
+  File? _selectedImage; // To hold the picked image
+  bool _isSaving = false; // To track saving state
   final _formKey = GlobalKey<FormState>();
   final DatabaseReference _databaseRef = FirebaseDatabase.instance.ref();
+  final FirebaseStorage _storage = FirebaseStorage.instance;
   final User? currentUser = FirebaseAuth.instance.currentUser;
 
   // Styled TextFormField widget
@@ -51,15 +57,46 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
     );
   }
 
+  // Function to pick an image
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+      });
+    }
+  }
+
   // Function to save the pet profile to Firebase
-  void _savePetProfile() async {
+  Future<void> _savePetProfile() async {
     if (_formKey.currentState!.validate() && currentUser != null) {
+      setState(() {
+        _isSaving = true; // Show loading indicator
+      });
+
+      String? imageUrl;
+
+      // Upload image to Firebase Storage if an image is selected
+      if (_selectedImage != null) {
+        final storageRef = _storage
+            .ref()
+            .child('pet_profiles')
+            .child(currentUser!.uid)
+            .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+        await storageRef.putFile(_selectedImage!);
+        imageUrl = await storageRef.getDownloadURL();
+      }
+
       final petProfileData = {
         'petName': _petNameController.text.trim(),
         'breed': _breedController.text.trim(),
         'color': _colorController.text.trim(),
         'sex': _selectedSex,
         'dateOfBirth': _dateOfBirthController.text.trim(),
+        'profileImage': imageUrl, // Save image URL
       };
 
       // Save to Firebase Realtime Database under the current user's ID
@@ -69,16 +106,21 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
           .push()
           .set(petProfileData);
 
-      // Clear fields after saving
-      _petNameController.clear();
-      _breedController.clear();
-      _colorController.clear();
-      _dateOfBirthController.clear();
-      setState(() => _selectedSex = null);
+      setState(() {
+        _isSaving = false; // Hide loading indicator
+        _petNameController.clear();
+        _breedController.clear();
+        _colorController.clear();
+        _dateOfBirthController.clear();
+        _selectedSex = null;
+        _selectedImage = null;
+      });
 
-      // Show confirmation message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Pet profile saved successfully!')),
+        SnackBar(
+          content: Center(child: Text('Pet profile saved successfully!')),
+          backgroundColor: Colors.green,
+        ),
       );
 
       Navigator.of(context).pop();
@@ -126,6 +168,20 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
             key: _formKey,
             child: Column(
               children: [
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                    backgroundImage: _selectedImage != null
+                        ? FileImage(_selectedImage!)
+                        : null,
+                    child: _selectedImage == null
+                        ? Icon(Iconsax.add, color: Colors.white, size: 40)
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 _buildStyledTextFormField(
                   controller: _petNameController,
                   hintText: 'Pet Name',
@@ -150,7 +206,6 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                       value!.isEmpty ? 'Please enter the color' : null,
                 ),
                 const SizedBox(height: 16),
-                // Sex Dropdown
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(
                     filled: true,
@@ -181,7 +236,6 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                       value == null ? 'Please select sex' : null,
                 ),
                 const SizedBox(height: 16),
-                // Date of Birth Field
                 GestureDetector(
                   onTap: () => _selectDateOfBirth(context),
                   child: AbsorbPointer(
@@ -196,25 +250,30 @@ class _AddPetProfileScreenState extends State<AddPetProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+                if (_isSaving)
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                  )
+                else
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    onPressed: _savePetProfile,
+                    child: Text(
+                      'Save Profile',
+                      style: GoogleFonts.lexend(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                  onPressed: _savePetProfile,
-                  child: Text(
-                    'Save Profile',
-                    style: GoogleFonts.lexend(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),

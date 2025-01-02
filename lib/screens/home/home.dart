@@ -78,9 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: PageView(
                     controller: _pageController,
                     children: [
-                      PromoBanner(imageUrl: 'assets/images/banner1.png'),
-                      PromoBanner(imageUrl: 'assets/images/banner1.png'),
-                      PromoBanner(imageUrl: 'assets/images/banner1.png'),
+                      PromoBanner(imageUrl: 'assets/images/banner1.jpg'),
+                      PromoBanner(imageUrl: 'assets/images/banner2.jpg'),
+                      PromoBanner(imageUrl: 'assets/images/banner3.jpg'),
                     ],
                   ),
                 ),
@@ -356,26 +356,34 @@ class ServicesSection extends StatelessWidget {
     {
       'title': 'Consultation',
       'image': 'assets/images/Consultation.png',
+      'details': 'Veterinary consultations address your pet’s health concerns, offering expert advice and tailored treatment plans. Whether it’s a routine wellness check or a specific health issue, your pet’s needs are prioritized.'
     },
     {
       'title': 'Vaccination',
       'image': 'assets/images/Vaccination.png',
+      'details': 'Vaccination services protect pets against common and potentially life-threatening diseases such as rabies, distemper, and parvovirus. Tailored vaccination schedules are designed to suit your pet’s age, breed, and lifestyle, ensuring long-term health and immunity.'
     },
     {
       'title': 'Deworming',
       'image': 'assets/images/deworming.png',
+      'details':
+          'Regular deworming services help protect pets from internal parasites like roundworms, hookworms, and tapeworms. These treatments prevent infections, improve your pet’s overall health, and reduce the risk of zoonotic transmission to humans.'
     },
     {
       'title': 'Surgery',
       'image': 'assets/images/Surgery.png',
+      'details': 'Comprehensive surgical care is available for pets, ranging from routine procedures (like spaying and neutering) to more advanced operations. The clinic ensures a safe and sterile environment, utilizing modern techniques and anesthesia to ensure your pet’s comfort and recovery.'
     },
     {
       'title': 'Laboratory',
       'image': 'assets/images/Laboratory.png',
+      'details': 'On-site laboratory testing provides quick and accurate results for diagnosing various health issues. Services include bloodwork, urinalysis, fecal exams, and other diagnostic tests to ensure prompt and effective treatment for your pet.'
     },
     {
       'title': 'Grooming',
       'image': 'assets/images/grooming.png',
+      'details':
+          'Professional grooming services keep your pets looking and feeling their best. This includes bathing, nail trimming, ear cleaning, haircuts, and coat maintenance to promote good hygiene and prevent skin issues.'
     },
   ];
 
@@ -389,7 +397,66 @@ class ServicesSection extends StatelessWidget {
         itemBuilder: (context, index) {
           final item = menuItems[index];
           return InkWell(
-            onTap: () {},
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    contentPadding: const EdgeInsets.all(16.0),
+                    backgroundColor: Color.fromARGB(255, 65, 128, 140),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              item['image'],
+                              width: 120,
+                              height: 120,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          item['title'],
+                          style: GoogleFonts.lexend(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          item['details'],
+                          style: GoogleFonts.lexend(
+                            fontSize: 14,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(
+                          'Close',
+                          style: GoogleFonts.lexend(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
             child: Card(
               color: Color.fromARGB(255, 65, 128, 140),
               shape: RoundedRectangleBorder(

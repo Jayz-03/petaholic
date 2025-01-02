@@ -67,8 +67,8 @@ class PetProfileScreen extends StatelessWidget {
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => MedicalListScreen(
                           petId: petProfileKey,
-                          medicalRecords: Map<String, dynamic>.from(
-                              medicalRecords as Map),
+                          medicalRecords:
+                              Map<String, dynamic>.from(medicalRecords as Map),
                         ),
                       ));
                     },
@@ -81,6 +81,16 @@ class PetProfileScreen extends StatelessWidget {
                       margin: const EdgeInsets.only(bottom: 16),
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(16),
+                        leading: CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.white.withOpacity(0.5),
+                          backgroundImage: petProfile['profileImage'] != null
+                              ? NetworkImage(petProfile[
+                                  'profileImage']) // Load the profile image from Firebase
+                              : AssetImage(
+                                      'assets/images/questionmark.png') // Default placeholder image
+                                  as ImageProvider, // Specify type to handle both
+                        ),
                         title: Text(
                           petProfile['petName'] ?? 'Unknown',
                           style: GoogleFonts.lexend(
@@ -100,19 +110,18 @@ class PetProfileScreen extends StatelessWidget {
                             Text('Sex: ${petProfile['sex'] ?? 'N/A'}',
                                 style:
                                     GoogleFonts.lexend(color: Colors.white70)),
-                            Text(
-                                'DOB: ${petProfile['dateOfBirth'] ?? 'N/A'}',
+                            Text('DOB: ${petProfile['dateOfBirth'] ?? 'N/A'}',
                                 style:
                                     GoogleFonts.lexend(color: Colors.white70)),
-                    const SizedBox(height: 10),
+                            const SizedBox(height: 10),
                             Text(
-                                'Tap here to view medical records...',
-                                style:
-                                    GoogleFonts.lexend(color: Colors.white70, fontSize: 12)),
+                              'Tap here to view medical records...',
+                              style: GoogleFonts.lexend(
+                                  color: Colors.white70, fontSize: 12),
+                            ),
                           ],
                         ),
-                        trailing:
-                            const Icon(Iconsax.pet, color: Colors.white),
+                        trailing: const Icon(Iconsax.pet, color: Colors.white),
                       ),
                     ),
                   );
@@ -190,8 +199,26 @@ class MedicalListScreen extends StatelessWidget {
         ),
       ),
       body: medicalRecords.isEmpty
-          ? const Center(
-              child: Text('No Medical Records Found'),
+          ? Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/questionmark.png',
+                    width: 200,
+                    height: 200,
+                  ),
+                  Text(
+                    textAlign: TextAlign.center,
+                    'No medical records found!',
+                    style: GoogleFonts.lexend(
+                      fontSize: 16,
+                      color: Color.fromARGB(255, 0, 86, 99),
+                    ),
+                  ),
+                ],
+              ),
             )
           : ListView.builder(
               itemCount: medicalRecords.length,
