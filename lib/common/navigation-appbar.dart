@@ -13,7 +13,6 @@ import 'package:petaholic/screens/sidebar-screens/contact-us.dart';
 import 'package:petaholic/screens/sidebar-screens/legal-terms.dart';
 import 'package:petaholic/screens/sidebar-screens/pet-profile.dart';
 import 'package:petaholic/screens/sidebar-screens/my-profile.dart';
-import 'package:petaholic/screens/sidebar-screens/services.dart';
 import 'package:petaholic/screens/telemedicine/telemedicine.dart';
 
 class SideAndTabsNavs extends StatefulWidget {

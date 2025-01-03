@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "BK Petaholic Promos",
+                        "BK Petaholic",
                         style: GoogleFonts.lexend(
                             color: Colors.white,
                             fontSize: 18,
@@ -365,7 +365,7 @@ class ServicesSection extends StatelessWidget {
     },
     {
       'title': 'Deworming',
-      'image': 'assets/images/deworming.png',
+      'image': 'assets/images/Dewormingggg.png',
       'details':
           'Regular deworming services help protect pets from internal parasites like roundworms, hookworms, and tapeworms. These treatments prevent infections, improve your pet’s overall health, and reduce the risk of zoonotic transmission to humans.'
     },
